@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+httpx
+python-jose[cryptography]
+minio
+python-multipart
+jinja2
+requests
+docker
