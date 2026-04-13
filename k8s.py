@@ -1,4 +1,4 @@
-import docker, random, string, secrets, os, socket
+import docker, random, string, secrets, os, socket, time
 
 DOMAIN         = os.getenv("DOMAIN", "localhost")
 NGINX_CONF_DIR = "/etc/nginx/services"
@@ -94,19 +94,21 @@ def create_service(username, service_type, svc_config):
             "--ServerApp.allow_origin=*",
             "--ServerApp.trust_xheaders=True",
         ]
+        client.containers.run(**run_kwargs)
         write_nginx_location(name, port)
+        time.sleep(3)
         reload_nginx()
+        url      = f"https://{DOMAIN}/{name}/"
         open_url = f"https://{DOMAIN}/{name}/lab?token={token}"
-        url = f"https://{DOMAIN}/{name}/"
     else:
         host_port = free_port()
-        run_kwargs["ports"] = {f"{port}/tcp": host_port}
-        run_kwargs["network"] = NETWORK
+        run_kwargs["ports"]              = {f"{port}/tcp": host_port}
+        run_kwargs["network"]            = NETWORK
         run_kwargs["labels"]["host_port"] = str(host_port)
-        url = f"http://{DOMAIN}:{host_port}/"
+        client.containers.run(**run_kwargs)
+        url      = f"http://{DOMAIN}:{host_port}/"
         open_url = url
 
-    client.containers.run(**run_kwargs)
     return url, token, open_url
 
 def delete_service(username, service_name):
