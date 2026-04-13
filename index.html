@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTNum Labs</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; }
+
+  header {
+    background:#1e293b;
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #334155;
+  }
+  .logo {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo-icon {
+    width:36px; height:36px;
+    background:linear-gradient(135deg,#2563eb,#06b6d4);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:800; color:#fff;
+  }
+  .logo-text { display:flex; flex-direction:column; }
+  .logo-title { font-size:18px; font-weight:700; color:#f1f5f9; letter-spacing:.02em; }
+  .logo-sub { font-size:10px; color:#64748b; letter-spacing:.1em; text-transform:uppercase; }
+
+  .user-info { display:flex; align-items:center; gap:14px; font-size:13px; color:#94a3b8; }
+  .user-badge {
+    background:#1e3a5f; border:1px solid #2d5a8e;
+    border-radius:20px; padding:5px 12px;
+    display:flex; align-items:center; gap:6px;
+    color:#93c5fd; font-size:13px;
+  }
+  .logout {
+    color:#f87171; text-decoration:none; font-size:12px;
+    padding:5px 12px; border:1px solid #3f1f1f;
+    border-radius:6px; background:#1f1010;
+    transition:all .2s;
+  }
+  .logout:hover { background:#ef4444; color:#fff; border-color:#ef4444; }
+
+  .container { max-width:1200px; margin:0 auto; padding:32px 24px; }
+
+  .section-title {
+    font-size:11px; font-weight:700; color:#64748b;
+    text-transform:uppercase; letter-spacing:.15em;
+    margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title::after {
+    content:''; flex:1; height:1px; background:#1e293b;
+  }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; margin-bottom:36px; }
+
+  .card {
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:12px;
+    padding:18px;
+    transition:border-color .2s;
+  }
+  .card:hover { border-color:#475569; }
+  .card.running { border-color:#064e3b; }
+
+  .card-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .card-icon { font-size:24px; }
+  .card-info { flex:1; }
+  .card-name { font-size:14px; font-weight:700; color:#f1f5f9; }
+  .card-id { font-size:10px; color:#475569; font-family:monospace; }
+
+  .badge-running {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:999px;
+    font-size:10px; font-weight:600;
+    background:#064e3b; color:#34d399;
+    margin-bottom:10px;
+  }
+  .badge-running::before { content:''; width:6px; height:6px; border-radius:50%; background:#34d399; }
+  .badge-starting {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:999px;
+    font-size:10px; font-weight:600;
+    background:#1a2a1a; color:#86efac;
+    margin-bottom:10px;
+  }
+
+  .token-box {
+    background:#0f172a;
+    border:1px solid #1e3a5f;
+    border-radius:6px;
+    padding:7px 10px;
+    margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .token-label { font-size:9px; color:#475569; text-transform:uppercase; letter-spacing:.1em; }
+  .token-value { font-family:monospace; font-size:12px; color:#60a5fa; font-weight:500; }
+  .copy-btn {
+    background:#1e3a5f; border:none; color:#60a5fa;
+    cursor:pointer; font-size:10px; padding:3px 8px;
+    border-radius:4px; font-family:'Segoe UI',sans-serif;
+    transition:all .15s;
+  }
+  .copy-btn:hover { background:#2563eb; color:#fff; }
+
+  .btn-group { display:flex; gap:8px; }
+  .btn {
+    flex:1; padding:8px 12px; border-radius:8px; border:none;
+    cursor:pointer; font-size:12px; font-weight:600;
+    font-family:'Segoe UI',sans-serif;
+    transition:all .2s;
+  }
+  .btn-open { background:#059669; color:#fff; }
+  .btn-open:hover { background:#047857; }
+  .btn-delete { background:#1f1010; color:#f87171; border:1px solid #3f1f1f; }
+  .btn-delete:hover { background:#ef4444; color:#fff; border-color:#ef4444; }
+  .btn-launch {
+    width:100%; padding:9px; border-radius:8px; border:none;
+    cursor:pointer; font-size:13px; font-weight:600;
+    background:#2563eb; color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    transition:all .2s;
+  }
+  .btn-launch:hover { background:#1d4ed8; }
+  .btn-launch:disabled { background:#1e3a5f; color:#4a6fa5; cursor:not-allowed; }
+
+  .catalog-card {
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    transition:all .2s;
+  }
+  .catalog-card:hover { border-color:#2563eb; background:#1a2640; }
+  .catalog-icon { font-size:36px; margin-bottom:10px; }
+  .catalog-name { font-size:15px; font-weight:700; color:#f1f5f9; margin-bottom:4px; }
+  .catalog-desc { font-size:11px; color:#64748b; margin-bottom:14px; }
+
+  .minio-info {
+    background:#1e293b; border:1px solid #334155;
+    border-radius:10px; padding:14px 18px;
+    font-size:12px; color:#64748b;
+    display:flex; align-items:center; gap:10px;
+  }
+  .minio-info strong { color:#60a5fa; font-family:monospace; }
+
+  .empty-state {
+    text-align:center; padding:32px;
+    color:#475569; font-size:13px;
+  }
+  .empty-state-icon { font-size:36px; margin-bottom:8px; opacity:.4; }
+
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.7); z-index:100;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.show { display:flex; }
+  .modal {
+    background:#1e293b; border:1px solid #334155;
+    border-radius:14px; padding:28px; max-width:420px; width:90%;
+  }
+  .modal h3 { font-size:16px; font-weight:700; color:#f1f5f9; margin-bottom:6px; }
+  .modal p { font-size:13px; color:#64748b; margin-bottom:16px; }
+  .modal-url {
+    background:#0f172a; border:1px solid #1e3a5f;
+    border-radius:8px; padding:10px 14px;
+    font-family:monospace; font-size:13px; color:#60a5fa;
+    margin-bottom:8px; word-break:break-all;
+  }
+  .modal-token {
+    background:#0f172a; border:1px solid #1e3a5f;
+    border-radius:8px; padding:10px 14px;
+    font-family:monospace; font-size:13px; color:#34d399;
+    margin-bottom:20px;
+  }
+  .modal-actions { display:flex; gap:10px; }
+  .modal-open { flex:1; padding:10px; border-radius:8px; border:none; background:#2563eb; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+  .modal-close { padding:10px 16px; border-radius:8px; border:1px solid #334155; background:transparent; color:#94a3b8; font-size:13px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">D</div>
+    <div class="logo-text">
+      <span class="logo-title">DTNum Labs</span>
+      <span class="logo-sub">Data Science Platform</span>
+    </div>
+  </div>
+  <div class="user-info">
+    <div class="user-badge">
+      <span>👤</span>
+      <span>{{ username }}</span>
+    </div>
+    <a href="/logout" class="logout">Déconnexion</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Services actifs -->
+  <div class="section-title">Mes services actifs</div>
+  <div class="grid">
+    {% if services %}
+      {% for svc in services %}
+      <div class="card {% if svc.ready %}running{% endif %}">
+        <div class="card-header">
+          <div class="card-icon">{{ catalog[svc.type].icon if svc.type in catalog else '🔧' }}</div>
+          <div class="card-info">
+            <div class="card-name">{{ catalog[svc.type].name if svc.type in catalog else svc.type }}</div>
+            <div class="card-id">#{{ svc.name.split('-')[-1] }}</div>
+          </div>
+        </div>
+        {% if svc.ready %}
+          <div class="badge-running">En cours</div>
+        {% else %}
+          <div class="badge-starting">⏳ Démarrage...</div>
+        {% endif %}
+        {% if svc.token %}
+        <div class="token-box">
+          <div>
+            <div class="token-label">Token d'accès</div>
+            <div class="token-value">{{ svc.token }}</div>
+          </div>
+          <button class="copy-btn" onclick="copyToken('{{ svc.token }}', this)">Copier</button>
+        </div>
+        {% endif %}
+        <div class="btn-group">
+          {% if svc.ready %}
+          <a href="{{ svc.url }}" target="_blank" style="flex:1">
+            <button class="btn btn-open" style="width:100%">🔗 Ouvrir</button>
+          </a>
+          {% endif %}
+          <button class="btn btn-delete" onclick="deleteService('{{ svc.name }}')">🗑</button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-state-icon">🚀</div>
+        <div>Aucun service actif.<br>Lance un service depuis le catalogue ci-dessous.</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Catalogue -->
+  <div class="section-title">Catalogue de services</div>
+  <div class="grid">
+    {% for key, svc in catalog.items() %}
+    <div class="catalog-card">
+      <div class="catalog-icon">{{ svc.icon }}</div>
+      <div class="catalog-name">{{ svc.name }}</div>
+      <div class="catalog-desc">Port {{ svc.port }} — Instances multiples possibles</div>
+      <button class="btn-launch" onclick="launchService('{{ key }}')">▶ Lancer une instance</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- MinIO -->
+  <div class="minio-info">
+    🪣 Stockage S3 personnel : <strong>s3://user-{{ username }}/</strong>
+    &nbsp;—&nbsp; accessible depuis tous tes services via MinIO (localhost:9000)
+  </div>
+
+</div>
+
+<!-- Modal confirmation lancement -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>✅ Service lancé avec succès</h3>
+    <p>Utilise les informations ci-dessous pour accéder à ton service :</p>
+    <div class="modal-url" id="modal-url"></div>
+    <div class="modal-token" id="modal-token"></div>
+    <div class="modal-actions">
+      <button class="modal-open" onclick="openService()">🔗 Ouvrir le service</button>
+      <button class="modal-close" onclick="closeModal()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUrl = '';
+
+async function launchService(type) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Lancement...';
+
+  try {
+    const r = await fetch(`/api/launch/${type}`, { method: 'POST' });
+    const d = await r.json();
+    if (d.url) {
+      currentUrl = d.url;
+      document.getElementById('modal-url').textContent = '🌐 ' + d.url;
+      document.getElementById('modal-token').textContent = '🔑 Token : ' + d.token;
+      document.getElementById('modal').classList.add('show');
+      location.reload();
+    } else {
+      alert('Erreur lors du lancement');
+    }
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ Lancer une instance';
+}
+
+function openService() {
+  window.open(currentUrl, '_blank');
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+async function deleteService(name) {
+  if (!confirm('Supprimer cette instance ?')) return;
+  await fetch(`/api/delete/${name}`, { method: 'DELETE' });
+  location.reload();
+}
+
+function copyToken(token, btn) {
+  navigator.clipboard.writeText(token);
+  btn.textContent = '✓';
+  setTimeout(() => btn.textContent = 'Copier', 2000);
+}
+
+setTimeout(() => location.reload(), 30000);
+</script>
+
+</body>
+</html>

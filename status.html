@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTNum Labs — Status</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; }
+  header { background:#1e293b; padding:14px 32px; border-bottom:1px solid #334155; display:flex; align-items:center; gap:12px; }
+  .logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#2563eb,#06b6d4); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:#fff; }
+  .logo-title { font-size:17px; font-weight:700; color:#f1f5f9; }
+  .logo-sub { font-size:10px; color:#64748b; letter-spacing:.1em; text-transform:uppercase; }
+  .back { margin-left:auto; color:#60a5fa; text-decoration:none; font-size:13px; }
+  .container { max-width:900px; margin:0 auto; padding:32px 24px; }
+  h2 { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.15em; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  h2::after { content:''; flex:1; height:1px; background:#1e293b; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:32px; }
+  .card { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:16px 18px; }
+  .card-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .indicator { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .ind-ok { background:#10b981; box-shadow:0 0 6px #10b981; }
+  .ind-warn { background:#f59e0b; box-shadow:0 0 6px #f59e0b; }
+  .ind-err { background:#ef4444; box-shadow:0 0 6px #ef4444; }
+  .ind-loading { background:#64748b; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .card-name { font-size:14px; font-weight:700; color:#f1f5f9; }
+  .card-status { font-size:12px; color:#64748b; }
+  .card-url { font-size:11px; color:#60a5fa; font-family:monospace; margin-top:6px; word-break:break-all; }
+  .services-list { display:flex; flex-direction:column; gap:8px; margin-bottom:32px; }
+  .svc-row { background:#1e293b; border:1px solid #334155; border-radius:8px; padding:12px 16px; display:flex; align-items:center; gap:12px; }
+  .svc-icon { font-size:20px; }
+  .svc-info { flex:1; }
+  .svc-name { font-size:13px; font-weight:700; color:#f1f5f9; }
+  .svc-detail { font-size:11px; color:#64748b; font-family:monospace; }
+  .token-badge { background:#0f172a; border:1px solid #1e3a5f; border-radius:4px; padding:2px 8px; font-size:11px; font-family:monospace; color:#60a5fa; }
+  .btn-open { padding:5px 12px; border-radius:6px; background:#059669; color:#fff; border:none; cursor:pointer; font-size:11px; font-weight:600; text-decoration:none; }
+  .empty { color:#475569; font-size:13px; padding:16px 0; }
+  .refresh-info { font-size:11px; color:#475569; text-align:right; margin-bottom:8px; }
+  .stat-row { display:flex; gap:12px; margin-bottom:32px; flex-wrap:wrap; }
+  .stat { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:14px 18px; flex:1; min-width:120px; }
+  .stat-num { font-size:26px; font-weight:800; color:#60a5fa; }
+  .stat-label { font-size:11px; color:#64748b; margin-top:4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">D</div>
+  <div>
+    <div class="logo-title">DTNum Labs</div>
+    <div class="logo-sub">Status des services</div>
+  </div>
+  <a href="/" class="back">← Retour au portail</a>
+</header>
+
+<div class="container">
+
+  <div class="refresh-info" id="refresh-info">Actualisation automatique toutes les 30s</div>
+
+  <!-- Stats globales -->
+  <div class="stat-row" id="stats">
+    <div class="stat"><div class="stat-num" id="stat-active">—</div><div class="stat-label">Services actifs</div></div>
+    <div class="stat"><div class="stat-num" id="stat-users">—</div><div class="stat-label">Utilisateurs</div></div>
+    <div class="stat"><div class="stat-num" id="stat-infra">—</div><div class="stat-label">Infra OK</div></div>
+  </div>
+
+  <!-- Infrastructure -->
+  <h2>Infrastructure</h2>
+  <div class="grid" id="infra-grid">
+    <div class="card"><div class="card-header"><div class="indicator ind-loading" id="ind-portal"></div><div><div class="card-name">DTNum Labs</div><div class="card-status" id="status-portal">Vérification...</div></div></div><div class="card-url">https://dtnum.nubo.local</div></div>
+    <div class="card"><div class="card-header"><div class="indicator ind-loading" id="ind-keycloak"></div><div><div class="card-name">Keycloak</div><div class="card-status" id="status-keycloak">Vérification...</div></div></div><div class="card-url">https://dtnum.nubo.local/auth</div></div>
+    <div class="card"><div class="card-header"><div class="indicator ind-loading" id="ind-minio"></div><div><div class="card-name">MinIO</div><div class="card-status" id="status-minio">Vérification...</div></div></div><div class="card-url">https://dtnum.nubo.local/minio</div></div>
+  </div>
+
+  <!-- Services actifs -->
+  <h2>Mes services actifs</h2>
+  <div id="services-container">
+    <div class="empty">Chargement...</div>
+  </div>
+
+</div>
+
+<script>
+const ICONS = { jupyter:'🔬', rstudio:'📊', vscode:'💻' };
+const NAMES = { jupyter:'JupyterLab', rstudio:'RStudio', vscode:'VSCode Server' };
+
+async function checkHealth(url) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    return r.ok || r.status < 500;
+  } catch { return false; }
+}
+
+function setIndicator(id, ok, text) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'indicator ' + (ok ? 'ind-ok' : 'ind-err'); }
+  const st = document.getElementById(text);
+  if (st) st.textContent = ok ? 'Opérationnel ✓' : 'Indisponible ✗';
+}
+
+async function checkInfra() {
+  const [portal, keycloak, minio] = await Promise.all([
+    checkHealth('/api/services'),
+    checkHealth('/auth/realms/datalab'),
+    checkHealth('/minio/'),
+  ]);
+  setIndicator('ind-portal', portal, 'status-portal');
+  setIndicator('ind-keycloak', keycloak, 'status-keycloak');
+  setIndicator('ind-minio', minio, 'status-minio');
+
+  const ok = [portal, keycloak, minio].filter(Boolean).length;
+  document.getElementById('stat-infra').textContent = `${ok}/3`;
+}
+
+async function loadServices() {
+  try {
+    const r = await fetch('/api/services');
+    if (!r.ok) throw new Error();
+    const services = await r.json();
+
+    document.getElementById('stat-active').textContent = services.length;
+
+    const users = [...new Set(services.map(s => s.name.split('-')[0]))];
+    document.getElementById('stat-users').textContent = users.length;
+
+    const container = document.getElementById('services-container');
+    if (!services.length) {
+      container.innerHTML = '<div class="empty">Aucun service actif pour cet utilisateur.</div>';
+      return;
+    }
+
+    container.innerHTML = '<div class="services-list">' +
+      services.map(s => `
+        <div class="svc-row">
+          <div class="svc-icon">${ICONS[s.type] || '🔧'}</div>
+          <div class="svc-info">
+            <div class="svc-name">${NAMES[s.type] || s.type} <span style="color:#475569;font-size:11px">#${s.name.split('-').pop()}</span></div>
+            <div class="svc-detail">${s.url}</div>
+          </div>
+          ${s.token ? `<span class="token-badge">🔑 ${s.token}</span>` : ''}
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="indicator ${s.ready ? 'ind-ok' : 'ind-loading'}"></div>
+            ${s.ready ? `<a href="${s.type === 'jupyter' ? s.url + 'lab?token=' + s.token : s.url}" target="_blank" class="btn-open">Ouvrir</a>` : '<span style="font-size:11px;color:#64748b">Démarrage...</span>'}
+          </div>
+        </div>`).join('') +
+      '</div>';
+  } catch {
+    document.getElementById('services-container').innerHTML =
+      '<div class="empty">Connectez-vous pour voir vos services.</div>';
+  }
+}
+
+async function refresh() {
+  const now = new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('refresh-info').textContent = `Dernière mise à jour : ${now}`;
+  await Promise.all([checkInfra(), loadServices()]);
+}
+
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>
