@@ -16,11 +16,7 @@
     align-items:center;
     border-bottom:1px solid #334155;
   }
-  .logo {
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
+  .logo { display:flex; align-items:center; gap:12px; }
   .logo-icon {
     width:36px; height:36px;
     background:linear-gradient(135deg,#2563eb,#06b6d4);
@@ -55,17 +51,56 @@
     margin-bottom:16px;
     display:flex; align-items:center; gap:8px;
   }
-  .section-title::after {
-    content:''; flex:1; height:1px; background:#1e293b;
+  .section-title::after { content:''; flex:1; height:1px; background:#1e293b; }
+
+  /* ── QUOTA ── */
+  .quota-container {
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:10px;
+    padding:14px 18px;
+    margin-bottom:28px;
+  }
+  .quota-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .quota-title { font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:6px; }
+  .quota-numbers { font-size:12px; color:#64748b; font-family:monospace; }
+  .quota-bar {
+    height:8px; background:#0f172a;
+    border-radius:4px; overflow:hidden;
+  }
+  .quota-fill {
+    height:100%; border-radius:4px;
+    transition:width .4s ease;
+  }
+  .quota-ok      { background:#10b981; }
+  .quota-warning { background:#f59e0b; }
+  .quota-danger  { background:#ef4444; }
+  .quota-message {
+    margin-top:8px; font-size:12px;
+    padding:6px 12px; border-radius:6px;
+    display:none;
+  }
+  .quota-message.warning {
+    background:#451a03; color:#fbbf24;
+    border:1px solid #78350f;
+    display:block;
+  }
+  .quota-message.danger {
+    background:#450a0a; color:#f87171;
+    border:1px solid #7f1d1d;
+    display:block;
   }
 
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; margin-bottom:36px; }
 
   .card {
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:12px;
-    padding:18px;
+    background:#1e293b; border:1px solid #334155;
+    border-radius:12px; padding:18px;
     transition:border-color .2s;
   }
   .card:hover { border-color:#475569; }
@@ -94,10 +129,8 @@
   }
 
   .token-box {
-    background:#0f172a;
-    border:1px solid #1e3a5f;
-    border-radius:6px;
-    padding:7px 10px;
+    background:#0f172a; border:1px solid #1e3a5f;
+    border-radius:6px; padding:7px 10px;
     margin-bottom:12px;
     display:flex; align-items:center; justify-content:space-between; gap:8px;
   }
@@ -115,8 +148,7 @@
   .btn {
     flex:1; padding:8px 12px; border-radius:8px; border:none;
     cursor:pointer; font-size:12px; font-weight:600;
-    font-family:'Segoe UI',sans-serif;
-    transition:all .2s;
+    font-family:'Segoe UI',sans-serif; transition:all .2s;
   }
   .btn-open { background:#059669; color:#fff; }
   .btn-open:hover { background:#047857; }
@@ -126,18 +158,14 @@
     width:100%; padding:9px; border-radius:8px; border:none;
     cursor:pointer; font-size:13px; font-weight:600;
     background:#2563eb; color:#fff;
-    font-family:'Segoe UI',sans-serif;
-    transition:all .2s;
+    font-family:'Segoe UI',sans-serif; transition:all .2s;
   }
   .btn-launch:hover { background:#1d4ed8; }
   .btn-launch:disabled { background:#1e3a5f; color:#4a6fa5; cursor:not-allowed; }
 
   .catalog-card {
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:12px;
-    padding:20px;
-    text-align:center;
+    background:#1e293b; border:1px solid #334155;
+    border-radius:12px; padding:20px; text-align:center;
     transition:all .2s;
   }
   .catalog-card:hover { border-color:#2563eb; background:#1a2640; }
@@ -150,6 +178,7 @@
     border-radius:10px; padding:14px 18px;
     font-size:12px; color:#64748b;
     display:flex; align-items:center; gap:10px;
+    margin-top:24px;
   }
   .minio-info strong { color:#60a5fa; font-family:monospace; }
 
@@ -208,6 +237,18 @@
 </header>
 
 <div class="container">
+
+  <!-- Quota stockage -->
+  <div class="quota-container">
+    <div class="quota-header">
+      <div class="quota-title">💾 Stockage personnel</div>
+      <div class="quota-numbers" id="quota-numbers">Chargement...</div>
+    </div>
+    <div class="quota-bar">
+      <div class="quota-fill quota-ok" id="quota-fill" style="width:0%"></div>
+    </div>
+    <div class="quota-message" id="quota-message"></div>
+  </div>
 
   <!-- Services actifs -->
   <div class="section-title">Mes services actifs</div>
@@ -292,6 +333,41 @@
 <script>
 let currentUrl = '';
 
+// ── QUOTA ────────────────────────────────────────────────
+async function loadQuota() {
+  try {
+    const r = await fetch('/api/storage');
+    if (!r.ok) return;
+    const d = await r.json();
+
+    document.getElementById('quota-numbers').textContent =
+      `${d.used_gb} Go / ${d.quota_gb} Go (${d.percent}%)`;
+
+    const fill = document.getElementById('quota-fill');
+    fill.style.width = Math.min(d.percent, 100) + '%';
+    fill.className = 'quota-fill ' +
+      (d.exceeded ? 'quota-danger' : d.warning ? 'quota-warning' : 'quota-ok');
+
+    const msg = document.getElementById('quota-message');
+    if (d.exceeded) {
+      msg.className = 'quota-message danger';
+      msg.textContent = '⛔ Quota dépassé — vous ne pouvez plus uploader de fichiers sur votre espace de stockage.';
+    } else if (d.warning) {
+      msg.className = 'quota-message warning';
+      msg.textContent = `⚠️ Attention — vous avez utilisé ${d.percent}% de votre quota de stockage (${d.quota_gb} Go).`;
+    } else {
+      msg.className = 'quota-message';
+      msg.textContent = '';
+    }
+  } catch(e) {
+    document.getElementById('quota-numbers').textContent = 'Indisponible';
+  }
+}
+
+loadQuota();
+setInterval(loadQuota, 60000);
+
+// ── SERVICES ─────────────────────────────────────────────
 async function launchService(type) {
   const btn = event.target;
   btn.disabled = true;
@@ -301,13 +377,13 @@ async function launchService(type) {
     const r = await fetch(`/api/launch/${type}`, { method: 'POST' });
     const d = await r.json();
     if (d.url) {
-      currentUrl = d.url;
+      currentUrl = d.open_url || d.url;
       document.getElementById('modal-url').textContent = '🌐 ' + d.url;
       document.getElementById('modal-token').textContent = '🔑 Token : ' + d.token;
       document.getElementById('modal').classList.add('show');
       location.reload();
     } else {
-      alert('Erreur lors du lancement');
+      alert('Erreur : ' + (d.detail || 'Lancement échoué'));
     }
   } catch(e) {
     alert('Erreur : ' + e.message);
