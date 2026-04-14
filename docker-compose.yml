@@ -89,7 +89,7 @@ services:
       start_period: 90s
     restart: unless-stopped
 
-minio:
+  minio:
     image: minio/minio:latest
     container_name: dtnum-minio
     environment:
