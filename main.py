@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from jinja2 import Environment, FileSystemLoader
 import httpx, os, json, base64
 from k8s import create_service, delete_service, list_user_services
-from minio_client import ensure_bucket
+from minio_client import ensure_bucket, get_storage_info
 
 app = FastAPI()
 jinja_env = Environment(loader=FileSystemLoader("/app/templates"))
@@ -114,6 +114,13 @@ async def services(request: Request):
     if not username:
         raise HTTPException(status_code=401)
     return JSONResponse(list_user_services(username))
+
+@app.get("/api/storage")
+async def storage(request: Request):
+    username = request.cookies.get("username")
+    if not username:
+        raise HTTPException(status_code=401)
+    return JSONResponse(get_storage_info(username))
 
 @app.get("/health")
 async def health():
