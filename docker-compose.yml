@@ -89,12 +89,13 @@ services:
       start_period: 90s
     restart: unless-stopped
 
-  minio:
+minio:
     image: minio/minio:latest
     container_name: dtnum-minio
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: Minio@2026!
+      MINIO_BROWSER_REDIRECT_URL: https://dtnum.nubo.local/minio
     command: server /data --console-address ":9001"
     expose:
       - "9000"
